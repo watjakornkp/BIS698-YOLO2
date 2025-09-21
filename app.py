@@ -3,8 +3,7 @@ import numpy as np
 from PIL import Image
 from ultralytics import YOLO
 from collections import Counter 
-import io
-import file_content_fetcher # เพิ่มการนำเข้า file_content_fetcher
+import os # เพิ่มการนำเข้า os เพื่อตรวจสอบไฟล์
 
 st.set_page_config(page_title="YOLO Image Detection", layout="wide")
 st.title("YOLO Image Detection App")
@@ -14,19 +13,19 @@ st.markdown("---")
 @st.cache_resource
 def load_model():
     """Load the YOLO model from the provided file."""
-    # Fetch the model file content using its contentFetchId
-    model_file_content = file_content_fetcher.fetch(
-        query="Load YOLO model from best.pt",
-        source_references=["uploaded:best.pt"]
-    )
-    
-    # Write the fetched content to a temporary file
-    with open("best.pt", "wb") as f:
-        f.write(model_file_content)
+    # ตรวจสอบว่าไฟล์โมเดลมีอยู่จริงในโฟลเดอร์หรือไม่
+    if not os.path.exists("best.pt"):
+        st.error("Error: The 'best.pt' model file was not found.")
+        st.warning("Please make sure the file is uploaded to the same directory as the app.py file.")
+        return None
     
     return YOLO("best.pt")
 
 model = load_model()
+
+# ถ้าโมเดลโหลดไม่สำเร็จ จะไม่รันโค้ดส่วนที่เหลือ
+if model is None:
+    st.stop()
 
 # Upload image
 st.subheader("1. Upload Your Image")
