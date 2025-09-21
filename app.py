@@ -2,18 +2,29 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 from ultralytics import YOLO
-from collections import Counter # เพิ่มการนำเข้า Counter
+from collections import Counter 
+import io
+import file_content_fetcher # เพิ่มการนำเข้า file_content_fetcher
 
 st.set_page_config(page_title="YOLO Image Detection", layout="wide")
 st.title("YOLO Image Detection App")
 st.markdown("---")
 
-# Load YOLO model
+# โหลดโมเดล
 @st.cache_resource
 def load_model():
-    """Load the YOLO model and cache it to prevent re-loading on every interaction."""
-    return YOLO("yolo11n.pt")
-    # If you have a custom model, use the correct path, e.g., YOLO("runs/detect/train73/weights/best.pt")
+    """Load the YOLO model from the provided file."""
+    # Fetch the model file content using its contentFetchId
+    model_file_content = file_content_fetcher.fetch(
+        query="Load YOLO model from best.pt",
+        source_references=["uploaded:best.pt"]
+    )
+    
+    # Write the fetched content to a temporary file
+    with open("best.pt", "wb") as f:
+        f.write(model_file_content)
+    
+    return YOLO("best.pt")
 
 model = load_model()
 
